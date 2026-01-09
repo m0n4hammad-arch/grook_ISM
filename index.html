@@ -1,0 +1,1272 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management Web Application Codebase</title>
+    <style>
+        body { font-family: monospace; background-color: #f4f4f4; color: #333; padding: 20px; }
+        h1, h2 { color: #6366f1; }
+        pre { background-color: #fff; border: 1px solid #ddd; padding: 10px; overflow-x: auto; }
+        .file-tree { margin-bottom: 20px; }
+        .file-content { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Course Management Web Application Codebase</h1>
+    <p>This HTML file contains the complete codebase for the specified course management web application. The file structure is outlined below, followed by the content of each file. Due to the complexity and size of a full production-ready app, this represents a comprehensive skeleton with key implementations. In a real project, this would span hundreds of files and require further expansion, but all specified features are addressed with code examples.</p>
+    
+    <h2>Project Structure</h2>
+    <pre class="file-tree">
+project-root/
+├── README.md
+├── docker-compose.yml
+├── .env.example
+├── frontend/
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   ├── vite.config.ts  (assuming Vite for React setup)
+│   ├── index.html
+│   ├── src/
+│   │   ├── main.tsx
+│   │   ├── App.tsx
+│   │   ├── index.css
+│   │   ├── assets/  (for images, etc.)
+│   │   ├── components/
+│   │   │   ├── atoms/  (Atomic Design: buttons, inputs, etc.)
+│   │   │   │   └── Button.tsx
+│   │   │   ├── molecules/  (forms, cards)
+│   │   │   │   └── CourseCard.tsx
+│   │   │   ├── organisms/  (headers, footers)
+│   │   │   │   └── Header.tsx
+│   │   │   ├── templates/  (pages layouts)
+│   │   │   │   └── DashboardLayout.tsx
+│   │   │   └── pages/  (full pages)
+│   │   │       ├── LandingPage.tsx
+│   │   │       ├── CourseCatalog.tsx
+│   │   │       ├── CoursePlayer.tsx
+│   │   │       ├── AdminDashboard.tsx
+│   │   │       ├── StudentDashboard.tsx
+│   │   │       └── InstructorDashboard.tsx
+│   │   ├── hooks/
+│   │   │   └── useAuth.ts
+│   │   ├── stores/
+│   │   │   └── authStore.ts  (Zustand example)
+│   │   ├── services/
+│   │   │   └── api.ts  (API client)
+│   │   ├── utils/
+│   │   │   └── validators.ts  (Zod schemas)
+│   │   └── types/
+│   │       └── index.ts
+├── backend/
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── migrations/  (generated)
+│   ├── src/
+│   │   ├── index.ts
+│   │   ├── app.ts
+│   │   ├── config/
+│   │   │   └── index.ts
+│   │   ├── controllers/
+│   │   │   ├── authController.ts
+│   │   │   ├── courseController.ts
+│   │   │   └── adminController.ts
+│   │   ├── middleware/
+│   │   │   ├── authMiddleware.ts
+│   │   │   └── errorHandler.ts
+│   │   ├── routes/
+│   │   │   ├── authRoutes.ts
+│   │   │   ├── courseRoutes.ts
+│   │   │   └── adminRoutes.ts
+│   │   ├── services/
+│   │   │   ├── emailService.ts
+│   │   │   └── paymentService.ts
+│   │   ├── utils/
+│   │   │   └── logger.ts
+│   │   └── sockets/
+│   │       └── index.ts  (Socket.io setup)
+├── tests/
+│   ├── frontend/  (Jest tests for React)
+│   │   └── App.test.tsx
+│   └── backend/  (Jest tests for Node)
+│       └── auth.test.ts
+└── seed.ts  (Sample data seeding)
+    </pre>
+    
+    <h2>File Contents</h2>
+    
+    <div class="file-content">
+        <h3>README.md</h3>
+        <pre>
+# Course Management Web App
+
+## Setup Instructions
+
+1. Clone the repo.
+2. Install dependencies:
+   - Frontend: cd frontend &amp;&amp; npm install
+   - Backend: cd backend &amp;&amp; npm install
+3. Set up .env files based on .env.example.
+4. Run Prisma migrations: npx prisma migrate dev
+5. Seed database: ts-node seed.ts
+6. Start backend: npm run dev (backend)
+7. Start frontend: npm run dev (frontend)
+8. Docker: docker-compose up
+
+## Technologies
+- Frontend: React, TypeScript, Tailwind, Zustand, etc.
+- Backend: Node, Express, Prisma, PostgreSQL
+- Other: Stripe, Cloudinary, Socket.io
+
+For detailed docs, see Swagger at /api-docs.
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>docker-compose.yml</h3>
+        <pre>
+version: '3.8'
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: course_db
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>.env.example</h3>
+        <pre>
+# Backend
+DATABASE_URL="postgresql://user:password@localhost:5432/course_db"
+JWT_SECRET=secret
+REFRESH_SECRET=refresh_secret
+STRIPE_SECRET_KEY=sk_test_...
+CLOUDINARY_URL=cloudinary://...
+NODEMAILER_USER=email@gmail.com
+NODEMAILER_PASS=pass
+
+# Frontend
+VITE_API_URL=http://localhost:5000
+VITE_STRIPE_PUBLIC_KEY=pk_test_...
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/package.json</h3>
+        <pre>
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc &amp;&amp; vite build",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.0",
+    "tailwindcss": "^3.3.0",
+    "zustand": "^4.3.0",
+    "framer-motion": "^10.0.0",
+    "lucide-react": "^0.105.0",
+    "tiptap": "^2.0.0",
+    "chart.js": "^4.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "@stripe/stripe-js": "^1.46.0",
+    "socket.io-client": "^4.5.0",
+    "zod": "^3.20.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@vitejs/plugin-react": "^3.0.0",
+    "vite": "^4.0.0",
+    "jest": "^29.0.0",
+    "@testing-library/react": "^13.4.0"
+  }
+}
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/tsconfig.json</h3>
+        <pre>
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/tailwind.config.js</h3>
+        <pre>
+module.exports = {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          from: '#6366f1',
+          to: '#3b82f6',
+        },
+        accent: '#10b981',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+};
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/postcss.config.js</h3>
+        <pre>
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/vite.config.ts</h3>
+        <pre>
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3000,
+  },
+});
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/index.html</h3>
+        <pre>
+&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8" /&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+    &lt;title&gt;Course App&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id="root"&gt;&lt;/div&gt;
+    &lt;script type="module" src="/src/main.tsx"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/main.tsx</h3>
+        <pre>
+// main.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+import { BrowserRouter } from 'react-router-dom';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  &lt;React.StrictMode&gt;
+    &lt;BrowserRouter&gt;
+      &lt;App /&gt;
+    &lt;/BrowserRouter&gt;
+  &lt;/React.StrictMode&gt;,
+);
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/App.tsx</h3>
+        <pre>
+// App.tsx
+import { Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
+import CourseCatalog from './pages/CourseCatalog';
+import CoursePlayer from './pages/CoursePlayer';
+import AdminDashboard from './pages/AdminDashboard';
+import StudentDashboard from './pages/StudentDashboard';
+import InstructorDashboard from './pages/InstructorDashboard';
+// Import other pages as needed
+
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;LandingPage /&gt;} /&gt;
+      &lt;Route path="/catalog" element={&lt;CourseCatalog /&gt;} /&gt;
+      &lt;Route path="/course/:id" element={&lt;CoursePlayer /&gt;} /&gt;
+      &lt;Route path="/admin" element={&lt;AdminDashboard /&gt;} /&gt;
+      &lt;Route path="/student" element={&lt;StudentDashboard /&gt;} /&gt;
+      &lt;Route path="/instructor" element={&lt;InstructorDashboard /&gt;} /&gt;
+      // Add more routes
+    &lt;/Routes&gt;
+  );
+}
+
+export default App;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/index.css</h3>
+        <pre>
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(to right, #6366f1, #3b82f6);
+  color: white;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/components/atoms/Button.tsx</h3>
+        <pre>
+// Button.tsx
+import { ButtonHTMLAttributes } from 'react';
+import { cva, VariantProps } from 'class-variance-authority'; // Optional for variants
+
+const buttonVariants = cva(
+  'px-4 py-2 rounded-md text-white focus:outline-none',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-gradient-to-r from-indigo-500 to-blue-500',
+        accent: 'bg-emerald-500',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+    },
+  }
+);
+
+interface ButtonProps extends ButtonHTMLAttributes&lt;HTMLButtonElement&gt;, VariantProps&lt;typeof buttonVariants&gt; {}
+
+const Button = ({ className, variant, ...props }: ButtonProps) =&gt; (
+  &lt;button className={buttonVariants({ variant, className })} {...props} /&gt;
+);
+
+export default Button;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/components/molecules/CourseCard.tsx</h3>
+        <pre>
+// CourseCard.tsx
+import { motion } from 'framer-motion';
+import { BookOpen } from 'lucide-react';
+
+interface CourseCardProps {
+  title: string;
+  description: string;
+  image: string;
+}
+
+const CourseCard = ({ title, description, image }: CourseCardProps) =&gt; (
+  &lt;motion.div 
+    className="glass p-4"
+    whileHover={{ scale: 1.05 }}
+  &gt;
+    &lt;img src={image} alt={title} className="w-full h-32 object-cover rounded" /&gt;
+    &lt;h3 className="text-lg font-bold"&gt;{title}&lt;/h3&gt;
+    &lt;p&gt;{description}&lt;/p&gt;
+    &lt;BookOpen className="text-emerald-500" /&gt;
+  &lt;/motion.div&gt;
+);
+
+export default CourseCard;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/components/organisms/Header.tsx</h3>
+        <pre>
+// Header.tsx
+import { Link } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
+import useAuth from '../../hooks/useAuth';
+
+const Header = () =&gt; {
+  const { user, logout } = useAuth();
+
+  return (
+    &lt;header className="glass flex justify-between p-4"&gt;
+      &lt;Link to="/"&gt;Course App&lt;/Link&gt;
+      {user &amp;&amp; (
+        &lt;nav&gt;
+          &lt;Link to="/dashboard"&gt;Dashboard&lt;/Link&gt;
+          &lt;button onClick={logout}&gt;&lt;LogOut /&gt;&lt;/button&gt;
+        &lt;/nav&gt;
+      )}
+    &lt;/header&gt;
+  );
+};
+
+export default Header;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/components/templates/DashboardLayout.tsx</h3>
+        <pre>
+// DashboardLayout.tsx
+import { Outlet } from 'react-router-dom';
+import Header from '../organisms/Header';
+
+const DashboardLayout = () =&gt; (
+  &lt;div className="min-h-screen"&gt;
+    &lt;Header /&gt;
+    &lt;main className="p-4"&gt;&lt;Outlet /&gt;&lt;/main&gt;
+  &lt;/div&gt;
+);
+
+export default DashboardLayout;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/pages/LandingPage.tsx</h3>
+        <pre>
+// LandingPage.tsx
+import { motion } from 'framer-motion';
+import Button from '../components/atoms/Button';
+
+const LandingPage = () =&gt; (
+  &lt;motion.section 
+    className="hero glass p-8 text-center"
+    initial={{ opacity: 0 }} 
+    animate={{ opacity: 1 }}
+  &gt;
+    &lt;h1 className="text-4xl font-bold"&gt;Welcome to Course App&lt;/h1&gt;
+    &lt;p&gt;Learn with the best courses.&lt;/p&gt;
+    &lt;Button&gt;Get Started&lt;/Button&gt;
+    &lt;!-- Feature showcase --&gt;
+    &lt;div className="grid grid-cols-3 gap-4 mt-8"&gt;
+      &lt;div className="feature"&gt;Feature 1&lt;/div&gt;
+      &lt;div className="feature"&gt;Feature 2&lt;/div&gt;
+      &lt;div className="feature"&gt;Feature 3&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/motion.section&gt;
+);
+
+export default LandingPage;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/pages/CourseCatalog.tsx</h3>
+        <pre>
+// CourseCatalog.tsx
+import { useState, useEffect } from 'react';
+import CourseCard from '../components/molecules/CourseCard';
+import api from '../services/api';
+
+const CourseCatalog = () =&gt; {
+  const [courses, setCourses] = useState([]);
+  const [search, setSearch] = useState('');
+
+  useEffect(() =&gt; {
+    api.get('/courses?search=' + search).then(setCourses);
+  }, [search]);
+
+  return (
+    &lt;div&gt;
+      &lt;input 
+        type="text" 
+        placeholder="Search courses" 
+        value={search} 
+        onChange={(e) =&gt; setSearch(e.target.value)} 
+        className="mb-4 p-2 border"
+      /&gt;
+      &lt;div className="grid grid-cols-1 md:grid-cols-3 gap-4"&gt;
+        {courses.map((course) =&gt; (&lt;CourseCard key={course.id} {...course} /&gt;))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
+
+export default CourseCatalog;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/pages/CoursePlayer.tsx</h3>
+        <pre>
+// CoursePlayer.tsx
+import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
+
+const CoursePlayer = () =&gt; {
+  const { id } = useParams();
+  const [course, setCourse] = useState(null);
+
+  useEffect(() =&gt; {
+    api.get(`/courses/${id}`).then(setCourse);
+  }, [id]);
+
+  if (!course) return &lt;div&gt;Loading...&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;video controls src={course.videoUrl}&gt;&lt;/video&gt;
+      &lt;!-- Progress tracking, discussions, etc. --&gt;
+      &lt;div className="progress-bar"&gt;Progress: 50%&lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
+
+export default CoursePlayer;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/pages/AdminDashboard.tsx</h3>
+        <pre>
+// AdminDashboard.tsx
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS } from 'chart.js/auto'; // Register components
+
+const data = {
+  labels: ['Jan', 'Feb', 'Mar'],
+  datasets: [{ label: 'Revenue', data: [100, 200, 300] }],
+};
+
+const AdminDashboard = () =&gt; (
+  &lt;div&gt;
+    &lt;h2&gt;Admin Analytics&lt;/h2&gt;
+    &lt;Bar data={data} /&gt;
+    &lt;!-- User management, etc. --&gt;
+  &lt;/div&gt;
+);
+
+export default AdminDashboard;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/pages/StudentDashboard.tsx</h3>
+        <pre>
+// StudentDashboard.tsx
+const StudentDashboard = () =&gt; (
+  &lt;div&gt;
+    &lt;h2&gt;Your Courses&lt;/h2&gt;
+    &lt;!-- Recommendations, progress, calendar, badges --&gt;
+    &lt;div className="progress"&gt;Completion: 70%&lt;/div&gt;
+  &lt;/div&gt;
+);
+
+export default StudentDashboard;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/pages/InstructorDashboard.tsx</h3>
+        <pre>
+// InstructorDashboard.tsx
+const InstructorDashboard = () =&gt; (
+  &lt;div&gt;
+    &lt;h2&gt;Course Performance&lt;/h2&gt;
+    &lt;!-- Analytics, grading, revenue --&gt;
+    &lt;div&gt;Revenue: $500&lt;/div&gt;
+  &lt;/div&gt;
+);
+
+export default InstructorDashboard;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/hooks/useAuth.ts</h3>
+        <pre>
+// useAuth.ts
+import useAuthStore from '../stores/authStore';
+
+const useAuth = () =&gt; {
+  const { user, login, logout } = useAuthStore();
+
+  // Logic for JWT, refresh, etc.
+  return { user, login, logout };
+};
+
+export default useAuth;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/stores/authStore.ts</h3>
+        <pre>
+// authStore.ts (Zustand)
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface AuthState {
+  user: any | null;
+  login: (user: any) =&gt; void;
+  logout: () =&gt; void;
+}
+
+const useAuthStore = create&lt;AuthState&gt;(
+  persist(
+    (set) =&gt; ({
+      user: null,
+      login: (user) =&gt; set({ user }),
+      logout: () =&gt; set({ user: null }),
+    }),
+    { name: 'auth-storage' }
+  )
+);
+
+export default useAuthStore;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/services/api.ts</h3>
+        <pre>
+// api.ts
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true, // For cookies if needed
+});
+
+// Interceptors for auth, errors
+api.interceptors.request.use((config) =&gt; {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+export default api;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/utils/validators.ts</h3>
+        <pre>
+// validators.ts
+import { z } from 'zod';
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+// Other schemas
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>frontend/src/types/index.ts</h3>
+        <pre>
+// index.ts
+export interface User {
+  id: string;
+  email: string;
+  role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
+}
+
+// Other types
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/package.json</h3>
+        <pre>
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "ts-node-dev src/index.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "prisma": "^4.10.0",
+    "@prisma/client": "^4.10.0",
+    "jsonwebtoken": "^9.0.0",
+    "bcrypt": "^5.1.0",
+    "socket.io": "^4.5.0",
+    "cloudinary": "^1.33.0",
+    "stripe": "^11.0.0",
+    "nodemailer": "^6.8.0",
+    "zod": "^3.20.0",
+    "swagger-ui-express": "^4.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/express": "^4.17.0",
+    "ts-node-dev": "^2.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/tsconfig.json</h3>
+        <pre>
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true
+  }
+}
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/prisma/schema.prisma</h3>
+        <pre>
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  role          Role     @default(STUDENT)
+  profile       Profile?
+  enrollments   Enrollment[]
+  courses       Course[] @relation("InstructorCourses")
+  payments      Payment[]
+  assignments   Assignment[]
+  submissions   Submission[]
+  discussions   Discussion[]
+  comments      Comment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Profile {
+  userId    String  @id
+  avatar    String?
+  bio       String?
+  user      User    @relation(fields: [userId], references: [id])
+}
+
+model Course {
+  id            String       @id @default(uuid())
+  title         String
+  description   String
+  instructorId  String
+  category      String
+  tags          String[]
+  content       Json // For lessons, videos, etc.
+  enrollments   Enrollment[]
+  assignments   Assignment[]
+  discussions   Discussion[]
+  instructor    User         @relation("InstructorCourses", fields: [instructorId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  progress  Int      @default(0)
+  completed Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  userId    String
+  amount    Float
+  status    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Assignment {
+  id          String     @id @default(uuid())
+  courseId    String
+  title       String
+  description String
+  dueDate     DateTime
+  submissions Submission[]
+  course      Course     @relation(fields: [courseId], references: [id])
+  instructor  User?      @relation(fields: [instructorId], references: [id])
+  instructorId String?
+}
+
+model Submission {
+  id           String   @id @default(uuid())
+  assignmentId String
+  studentId    String
+  content      String
+  grade        Int?
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  student      User       @relation(fields: [studentId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model Discussion {
+  id        String   @id @default(uuid())
+  courseId  String
+  title     String
+  content   String
+  userId    String
+  comments  Comment[]
+  course    Course   @relation(fields: [courseId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id           String     @id @default(uuid())
+  discussionId String
+  userId       String
+  content      String
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
+  createdAt    DateTime   @default(now())
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/index.ts</h3>
+        <pre>
+// index.ts
+import app from './app';
+import http from 'http';
+import { Server } from 'socket.io';
+import { socketHandler } from './sockets/index';
+
+const server = http.createServer(app);
+const io = new Server(server);
+
+io.on('connection', socketHandler);
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () =&gt; console.log(`Server running on port ${PORT}`));
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/app.ts</h3>
+        <pre>
+// app.ts
+import express from 'express';
+import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import * as swaggerDoc from './swagger.json'; // Assume generated
+import authRoutes from './routes/authRoutes';
+import courseRoutes from './routes/courseRoutes';
+import adminRoutes from './routes/adminRoutes';
+import errorHandler from './middleware/errorHandler';
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/admin', adminRoutes);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+
+app.use(errorHandler);
+
+export default app;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/config/index.ts</h3>
+        <pre>
+// index.ts
+export const config = {
+  jwtSecret: process.env.JWT_SECRET || 'secret',
+  // Other configs
+};
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/controllers/authController.ts</h3>
+        <pre>
+// authController.ts
+import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+import { config } from '../config';
+
+const prisma = new PrismaClient();
+
+/**
+ * @description Login user
+ */
+export const login = async (req: Request, res: Response) =&gt; {
+  const { email, password } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+  const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: '1h' });
+  const refreshToken = jwt.sign({ id: user.id }, config.refreshSecret, { expiresIn: '7d' });
+  res.json({ token, refreshToken });
+};
+
+// Other auth functions: register, resetPassword, etc.
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/controllers/courseController.ts</h3>
+        <pre>
+// courseController.ts
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export const createCourse = async (req: Request, res: Response) =&gt; {
+  const { title, description, category } = req.body;
+  const instructorId = req.user.id; // From auth middleware
+  const course = await prisma.course.create({
+    data: { title, description, category, instructorId },
+  });
+  res.json(course);
+};
+
+// Other functions: getCourses, enroll, etc.
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/controllers/adminController.ts</h3>
+        <pre>
+// adminController.ts
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export const getAnalytics = async (req: Request, res: Response) =&gt; {
+  const users = await prisma.user.count();
+  // Other stats
+  res.json({ users });
+};
+
+// Other admin functions
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/middleware/authMiddleware.ts</h3>
+        <pre>
+// authMiddleware.ts
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { config } from '../config';
+
+export const auth = (req: Request, res: Response, next: NextFunction) =&gt; {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token' });
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+// Role-based middleware
+export const adminOnly = (req: Request, res: Response, next: NextFunction) =&gt; {
+  if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin only' });
+  next();
+};
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/middleware/errorHandler.ts</h3>
+        <pre>
+// errorHandler.ts
+import { Request, Response, NextFunction } from 'express';
+
+export default (err: Error, req: Request, res: Response, next: NextFunction) =&gt; {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong' });
+};
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/routes/authRoutes.ts</h3>
+        <pre>
+// authRoutes.ts
+import { Router } from 'express';
+import { login } from '../controllers/authController';
+
+const router = Router();
+
+router.post('/login', login);
+// Other routes: register, refresh, etc.
+
+export default router;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/routes/courseRoutes.ts</h3>
+        <pre>
+// courseRoutes.ts
+import { Router } from 'express';
+import { createCourse } from '../controllers/courseController';
+import { auth } from '../middleware/authMiddleware';
+
+const router = Router();
+
+router.post('/', auth, createCourse);
+// Other routes
+
+export default router;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/routes/adminRoutes.ts</h3>
+        <pre>
+// adminRoutes.ts
+import { Router } from 'express';
+import { getAnalytics } from '../controllers/adminController';
+import { auth, adminOnly } from '../middleware/authMiddleware';
+
+const router = Router();
+
+router.get('/analytics', auth, adminOnly, getAnalytics);
+// Other routes
+
+export default router;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/services/emailService.ts</h3>
+        <pre>
+// emailService.ts
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.NODEMAILER_USER,
+    pass: process.env.NODEMAILER_PASS,
+  },
+});
+
+export const sendVerificationEmail = async (to: string, token: string) =&gt; {
+  await transporter.sendMail({
+    to,
+    subject: 'Verify Email',
+    html: `&lt;p&gt;Click to verify: ${token}&lt;/p&gt;`,
+  });
+};
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/services/paymentService.ts</h3>
+        <pre>
+// paymentService.ts
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-04-10' });
+
+export const createCheckoutSession = async (amount: number) =&gt; {
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [{ price_data: { currency: 'usd', product_data: { name: 'Course' }, unit_amount: amount }, quantity: 1 }],
+    mode: 'payment',
+    success_url: 'success',
+    cancel_url: 'cancel',
+  });
+  return session;
+};
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/utils/logger.ts</h3>
+        <pre>
+// logger.ts
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+export default logger;
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>backend/src/sockets/index.ts</h3>
+        <pre>
+// index.ts (Socket.io)
+import { Socket } from 'socket.io';
+
+export const socketHandler = (socket: Socket) =&gt; {
+  console.log('User connected');
+  // Real-time features: chat, progress updates, etc.
+  socket.on('joinCourse', (courseId) =&gt; {
+    socket.join(courseId);
+  });
+  
+  socket.on('disconnect', () =&gt; console.log('User disconnected'));
+};
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>tests/frontend/App.test.tsx</h3>
+        <pre>
+// App.test.tsx
+import { render, screen } from '@testing-library/react';
+import App from '../../src/App';
+
+test('renders app', () =&gt; {
+  render(&lt;App /&gt;);
+  expect(screen.getByText(/welcome/i)).toBeInTheDocument(); // Adjust
+});
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>tests/backend/auth.test.ts</h3>
+        <pre>
+// auth.test.ts
+import request from 'supertest';
+import app from '../../src/app';
+
+describe('Auth', () =&gt; {
+  it('should login', async () =&gt; {
+    const res = await request(app).post('/api/auth/login').send({ email: 'test@test.com', password: 'pass' });
+    expect(res.status).toBe(200);
+  });
+});
+        </pre>
+    </div>
+    
+    <div class="file-content">
+        <h3>seed.ts</h3>
+        <pre>
+// seed.ts
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const hashedPass = bcrypt.hashSync('password', 10);
+  await prisma.user.create({
+    data: {
+      email: 'admin@example.com',
+      password: hashedPass,
+      role: 'ADMIN',
+    },
+  });
+  // Add more sample data
+}
+
+main().catch(console.error).finally(() =&gt; prisma.$disconnect());
+        </pre>
+    </div>
+    
+    <p>Note: This is a comprehensive skeleton. For full implementation, expand each file with additional logic, error handling, and features as specified. Integrations like Cloudinary, Vimeo, social login (using passport.js), etc., would require additional setup. Testing is minimal; add more tests. Swagger JSON would be generated separately.</p>
+</body>
+</html>
+```
